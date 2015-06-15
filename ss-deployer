@@ -122,23 +122,29 @@ def main():
     # install shadowsocks
     print colored('[*] Installing shadowsocks ...', 'green')
     if pkg_manager == 'apt-get':
-        Popen('debian/install-ss.sh', shell=True).wait()
+        p = Popen('debian/install-ss.sh', shell=True, stdout=PIPE, stderr=PIPE)
+        p.wait()
     else:
-        Popen('centos/install-ss.sh', shell=True).wait()
+        p = Popen('centos/install-ss.sh', shell=True, stdout=PIPE, stderr=PIPE)
+        p.wait()
 
     # config the ipv6
     if not only_shadow:
         print colored('[*] Configuring ipv6 tunnel ...', 'green')
         if pkg_manager == 'apt-get':
-            Popen('debian/compiler-tb.sh', shell=True).wait()
+            p = Popen('debian/compiler-tb.sh', shell=True, stdout=PIPE, stderr=PIPE)
+            p.wait()
         else:
-            Popen('centos/compiler-tb.sh', shell=True).wait()
+            p = Popen('centos/compiler-tb.sh', shell=True, stdout=PIPE, stderr=PIPE)
+            p.wait()
         open('/etc/init.d/ipv6tb', 'w').write(startup_shell %
                                               (ipv6config['serveraddr'], ipv6config['clientaddr'], ipv6config['ipv6addr'], ipv6config['routeraddr']))
         if rc_manager == 'update-rc.d':
-            Popen('debian/add-rc.sh', shell=True).wait()
+            p = Popen('debian/add-rc.sh', shell=True, stdout=PIPE, stderr=PIPE)
+            p.wait()
         else:
-            Popen('centos/add-rc.sh', shell=True).wait()
+            p = Popen('centos/add-rc.sh', shell=True, stdout=PIPE, stderr=PIPE)
+            p.wait()
 
     print colored('[*] Done !', 'yellow')
 
