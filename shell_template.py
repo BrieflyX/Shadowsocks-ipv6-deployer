@@ -17,7 +17,7 @@ touch /var/lock/ipv6tb
 case "$1" in
 start)
 echo "Starting ipv6tb"
-setsid ./tb_userspace tb %s %s sit
+setsid /usr/local/bin/tb_userspace tb %s %s sit > /dev/null
 sleep 3s
 ifconfig tb up
 ifconfig tb inet6 add %s
