@@ -71,7 +71,7 @@ def parse_config():
 
     cf = ConfigParser.ConfigParser()
     if not os.path.exists(config_file):
-        print colored('[*] Cannot find config file: %s', 'red')
+        print colored('[*] Cannot find config file: %s' % config_file, 'red')
         sys.exit(1)
     cf.read(config_file)
     ss_config = dict(cf.items('shadowsocks'))
@@ -90,7 +90,7 @@ def parse_args():
     parser = OptionParser(usage=usage)
     parser.add_option('-s', '--shadowsocks', default=False,
                       help='only install shadowsocks, no ipv6 config', action='store_true', dest='only_shadow')
-    parser.add_option('-c', '--config-file', default='ss_deployer.conf',
+    parser.add_option('-c', '--config-file', default='ss-deployer.conf',
                       help='specific a config file replacing default', action='store', dest='config_file')
     (options, args) = parser.parse_args()
     config_file = options.config_file
@@ -98,6 +98,11 @@ def parse_args():
 
 
 def main():
+    try:
+        os.setuid(0)
+    except:
+        print colored('[*] You should run on root!', 'red')
+        sys.exit(1)
     parse_args()
     check_system()
     parse_config()
@@ -110,6 +115,6 @@ def main():
     else:
         os.system('./install_ss_centos')
 
-    
+        
 if __name__ == '__main__':
     main()

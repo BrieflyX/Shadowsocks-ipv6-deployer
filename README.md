@@ -1,5 +1,7 @@
 # Shadowsocks IPv6 Deployer
 
+## Developed by BrieflyX
+
 施工中，未完成.....
 
 ss一键部署工具，附加ipv6通道建立工具。
