@@ -40,7 +40,7 @@ except ImportError:
     print colored('[-] Missing shell-template!', 'red')
     sys.exit(1)
 
-pkg_manger = ""
+pkg_manager = ""
 rc_manager = ""
 system = ""
 config_file = "ss_deployer.conf"
@@ -50,7 +50,7 @@ ipv6_config = {}
 
 
 def check_system():
-    global pkg_manger, rc_manager
+    global pkg_manager, rc_manager
 
     if os.path.exists('/usr/bin/apt-get'):
         pkg_manager = 'apt-get'
