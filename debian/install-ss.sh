@@ -4,6 +4,9 @@
 # for debian, ubuntu
 
 apt-get install -y python-setuptools m2crypto supervisor &> /dev/null
+
+wait
+
 easy_install pip &> /dev/null
 pip install shadowsocks &> /dev/null
 
