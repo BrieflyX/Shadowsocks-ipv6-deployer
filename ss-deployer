@@ -3,7 +3,7 @@
 from optparse import OptionParser
 import ConfigParser
 import os
-from subprocess import Popen
+from subprocess import Popen, PIPE
 import sys
 import json
 
@@ -43,9 +43,9 @@ except ImportError:
 
 pkg_manager = ""
 rc_manager = ""
-system = ""
 config_file = "ss_deployer.conf"
 only_shadow = False
+only6 = False
 ss_config = {}
 ipv6_config = {}
 
@@ -93,49 +93,55 @@ def parse_config():
 
 
 def parse_args():
-    global config_file, only_shadow
+    global config_file, only_shadow, only6
 
     usage = 'Usage: %prog [options] '
     parser = OptionParser(usage=usage)
     parser.add_option('-s', '--shadowsocks', default=False,
                       help='only install shadowsocks, no ipv6 config', action='store_true', dest='only_shadow')
+    parser.add_option('-6', '--ipv6', default=False,
+                      help='only config ipv6 tunnel, don\'t install shadowsocks', action='store_true', dest='only6')
     parser.add_option('-c', '--config-file', default='ss-deployer.conf',
                       help='specific a config file replacing default', action='store', dest='config_file')
     (options, args) = parser.parse_args()
     config_file = options.config_file
     only_shadow = options.only_shadow
+    only6 = options.only6
 
 
 def main():
     print colored('[*] Program start ...', 'yellow')
+    parse_args()
     try:
         os.setuid(0)
     except:
         print colored('[*] You should run on root!', 'red')
         sys.exit(1)
-    parse_args()
     check_system()
     parse_config()
     print colored('[*] Generate SS config file ...', 'green')
     open('shadowsocks.json', 'w').write(json.dumps(ss_config, indent=4))
 
     # install shadowsocks
-    print colored('[*] Installing shadowsocks ...', 'green')
-    if pkg_manager == 'apt-get':
-        p = Popen('debian/install-ss.sh', shell=True, stdout=PIPE, stderr=PIPE)
-        p.wait()
-    else:
-        p = Popen('centos/install-ss.sh', shell=True, stdout=PIPE, stderr=PIPE)
-        p.wait()
+    if not only6:
+        print colored('[*] Installing shadowsocks ...', 'green')
+        if pkg_manager == 'apt-get':
+            p = Popen('debian/install-ss.sh', shell=True, stdout=PIPE, stderr=PIPE)
+            p.wait()
+        else:
+            p = Popen('centos/install-ss.sh', shell=True, stdout=PIPE, stderr=PIPE)
+            p.wait()
 
     # config the ipv6
     if not only_shadow:
         print colored('[*] Configuring ipv6 tunnel ...', 'green')
         if pkg_manager == 'apt-get':
-            p = Popen('debian/compiler-tb.sh', shell=True, stdout=PIPE, stderr=PIPE)
+            p = Popen(
+                'debian/compiler-tb.sh', shell=True, stdout=PIPE, stderr=PIPE)
             p.wait()
         else:
-            p = Popen('centos/compiler-tb.sh', shell=True, stdout=PIPE, stderr=PIPE)
+            p = Popen(
+                'centos/compiler-tb.sh', shell=True, stdout=PIPE, stderr=PIPE)
             p.wait()
         open('/etc/init.d/ipv6tb', 'w').write(startup_shell %
                                               (ipv6config['serveraddr'], ipv6config['clientaddr'], ipv6config['ipv6addr'], ipv6config['routeraddr']))
