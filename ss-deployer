@@ -3,6 +3,7 @@
 from optparse import OptionParser
 import ConfigParser
 import os
+from subprocess import Popen
 import sys
 import json
 
@@ -121,23 +122,23 @@ def main():
     # install shadowsocks
     print colored('[*] Installing shadowsocks ...', 'green')
     if pkg_manager == 'apt-get':
-        os.system('debian/install-ss.sh')
+        Popen('debian/install-ss.sh', shell=True).wait()
     else:
-        os.system('centos/install-ss.sh')
+        Popen('centos/install-ss.sh', shell=True).wait()
 
     # config the ipv6
     if not only_shadow:
         print colored('[*] Configuring ipv6 tunnel ...', 'green')
         if pkg_manager == 'apt-get':
-            os.system('debian/compiler-tb.sh')
+            Popen('debian/compiler-tb.sh', shell=True).wait()
         else:
-            os.system('centos/compiler-tb.sh')
+            Popen('centos/compiler-tb.sh', shell=True).wait()
         open('/etc/init.d/ipv6tb', 'w').write(startup_shell %
                                               (ipv6config['serveraddr'], ipv6config['clientaddr'], ipv6config['ipv6addr'], ipv6config['routeraddr']))
         if rc_manager == 'update-rc.d':
-            os.system('debian/add-rc.sh')
+            Popen('debian/add-rc.sh', shell=True).wait()
         else:
-            os.system('centos/add-rc.sh')
+            Popen('centos/add-rc.sh', shell=True).wait()
 
     print colored('[*] Done !', 'yellow')
 
