@@ -12,6 +12,7 @@ system = ""
 config_file = "ss_deployer.conf"
 only_shadow = False
 ss_config = {}
+ipv6_config = {}
 
 
 # generate a colored-term
@@ -50,31 +51,32 @@ def check_system():
     elif os.path.exists('/usr/bin/yum'):
         pkg_manager = 'yum'
     else:
-        print colored('[*] No pkg-manager found!', 'red')
+        print colored('[-] No pkg-manager found!', 'red')
         sys.exit(1)
 
-    print colored('[*] Detected %s' % pkg_manager, 'green')
+    print colored('[+] Detected %s' % pkg_manager, 'green')
 
     if os.path.exists('/usr/bin/chkconfig'):
         rc_manager = 'chkconfig'
     elif os.path.exists('/usr/sbin/update-rc.d') or os.path.exists('/usr/bin/update-rc.d'):
         rc_manager = 'update-rc.d'
     else:
-        print colored('[*] No rc-manager found!', 'red')
+        print colored('[-] No rc-manager found!', 'red')
         sys.exit(1)
 
-    print colored('[*] Detected %s' % rc_manager, 'green')
+    print colored('[+] Detected %s' % rc_manager, 'green')
 
 
 def parse_config():
-    global ss_config
+    global ss_config, ipv6config
 
     cf = ConfigParser.ConfigParser()
     if not os.path.exists(config_file):
-        print colored('[*] Cannot find config file: %s' % config_file, 'red')
+        print colored('[-] Cannot find config file: %s' % config_file, 'red')
         sys.exit(1)
     cf.read(config_file)
     ss_config = dict(cf.items('shadowsocks'))
+    ipv6config = dict(cf.items('ipv6'))
 
     # multi-user should be handled
     if 'port_password' in ss_config:
@@ -98,6 +100,7 @@ def parse_args():
 
 
 def main():
+    print colored('[*] Program start ...', 'yellow')
     try:
         os.setuid(0)
     except:
@@ -106,14 +109,32 @@ def main():
     parse_args()
     check_system()
     parse_config()
-    print '[*] Generate SS config file ...'
+    print colored('[*] Generate SS config file ...', 'green')
     open('shadowsocks.json', 'w').write(json.dumps(ss_config, indent=4))
 
     # install shadowsocks
+    print colored('[*] Installing shadowsocks ...', 'green')
     if pkg_manager == 'apt-get':
-        os.system('./install_ss_debian')
+        os.system('debian/install_ss.sh')
     else:
-        os.system('./install_ss_centos')
+        os.system('centos/install_ss.sh')
+
+    # config the ipv6
+    if not only_shadow:
+        print colored('[*] Configuring ipv6 tunnel ...', 'green')
+        if pkg_manager == 'apt-get':
+            os.system('debian/compiler-tb.sh')
+        else:
+            os.system('centos/compiler-tb.sh')
+        from shell_template import *
+        open('/etc/init.d/ipv6tb', 'w').write(startup_shell % (ipv6config['serveraddr'], ipv6config['clientaddr'], ipv6config['ipv6addr'], ipv6config['routeraddr']))
+        if rc_manager == 'update-rc.d':
+            os.system('debian/add-rc.sh')
+        else:
+            os.system('centos/add-rc.sh')
+
+    print colored('[*] Done !', 'yellow')
+
 
         
 if __name__ == '__main__':
