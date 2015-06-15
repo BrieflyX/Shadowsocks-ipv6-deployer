@@ -6,15 +6,6 @@ import os
 import sys
 import json
 
-pkg_manger = ""
-rc_manager = ""
-system = ""
-config_file = "ss_deployer.conf"
-only_shadow = False
-ss_config = {}
-ipv6_config = {}
-
-
 # generate a colored-term
 
 try:
@@ -41,6 +32,21 @@ except:
 
         text += RESET
         return text
+
+
+try:
+    from shell_template import *
+except ImportError:
+    print colored('[-] Missing shell-template!', 'red')
+    sys.exit(1)
+
+pkg_manger = ""
+rc_manager = ""
+system = ""
+config_file = "ss_deployer.conf"
+only_shadow = False
+ss_config = {}
+ipv6_config = {}
 
 
 def check_system():
@@ -126,8 +132,8 @@ def main():
             os.system('debian/compiler-tb.sh')
         else:
             os.system('centos/compiler-tb.sh')
-        from shell_template import *
-        open('/etc/init.d/ipv6tb', 'w').write(startup_shell % (ipv6config['serveraddr'], ipv6config['clientaddr'], ipv6config['ipv6addr'], ipv6config['routeraddr']))
+        open('/etc/init.d/ipv6tb', 'w').write(startup_shell %
+                                              (ipv6config['serveraddr'], ipv6config['clientaddr'], ipv6config['ipv6addr'], ipv6config['routeraddr']))
         if rc_manager == 'update-rc.d':
             os.system('debian/add-rc.sh')
         else:
@@ -136,6 +142,5 @@ def main():
     print colored('[*] Done !', 'yellow')
 
 
-        
 if __name__ == '__main__':
     main()
