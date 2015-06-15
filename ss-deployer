@@ -121,9 +121,9 @@ def main():
     # install shadowsocks
     print colored('[*] Installing shadowsocks ...', 'green')
     if pkg_manager == 'apt-get':
-        os.system('debian/install_ss.sh')
+        os.system('debian/install-ss.sh')
     else:
-        os.system('centos/install_ss.sh')
+        os.system('centos/install-ss.sh')
 
     # config the ipv6
     if not only_shadow:
